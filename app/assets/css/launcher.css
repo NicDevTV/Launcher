@@ -988,7 +988,8 @@ body, button {
 }
 
 .loginOptionButtonContainer {
-    width: 16em;
+    display: flex;
+    justify-content: center;
 }
 
 .loginOptionButton {

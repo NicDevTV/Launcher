@@ -1,60 +1,50 @@
 {
   "version": "1.0.0",
-  "rss": "https://example.com/rss.xml",
+  "rss": "",
   "discord": {
     "clientId": "123456789012345678",
-    "smallImageText": "My Launcher",
-    "smallImageKey": "launcher-icon"
+    "smallImageText": "Spiel läuft auf Forge 1.16.5",
+    "smallImageKey": "pizzaland_logo"
   },
   "servers": [
     {
-      "id": "Forge-1.16.4",
-      "name": "Mein Forge Server (1.16.4)",
-      "description": "Beispiel Minecraft 1.16.4 Server mit Forge",
-      "icon": "https://example.com/icons/forge-1.16.4.png",
+      "id": "Forge-1.16.5",
+      "name": "Forge 1.16.5 Test",
+      "description": "Testserver für Forge 1.16.5",
+      "icon": "https://www.pizzaland-rp.com/wp-content/uploads/2023/01/Logo_PizzaLand.png",
       "version": "1.0.0",
       "address": "localhost:25565",
-      "minecraftVersion": "1.16.4",
+      "minecraftVersion": "1.16.5",
       "discord": {
-        "shortId": "Forge-1.16.4",
-        "largeImageKey": "https://example.com/icons/large.png",
-        "largeImageText": "Forge Minecraft 1.16.4"
+        "shortId": "Forge 1.16.5",
+        "largeImageText": "Auf Testserver verbunden",
+        "largeImageKey": "pizzaland_logo"
       },
-      "mainServer": true,
+      "mainServer": false,
       "autoconnect": false,
       "modules": [
         {
-          "id": "net.minecraftforge:forge:1.16.4-35.1.37",
-          "name": "Minecraft Forge 1.16.4",
+          "id": "net.minecraftforge:forge:1.16.5-36.2.20",
+          "name": "Minecraft Forge 1.16.5",
           "type": "ForgeHosted",
           "classpath": true,
           "artifact": {
-            "size": 1234567,
-            "MD5": "abcdef1234567890abcdef1234567890",
-            "url": "https://example.com/repo/forge-1.16.4-35.1.37.jar"
+            "size": 1000000,
+            "MD5": "dummyMD5",
+            "url": "https://example.com/forge-1.16.5.jar"
           },
           "subModules": [
             {
-              "id": "1.16.4-35.1.37",
-              "name": "Version Manifest",
+              "id": "1.16.5-36.2.20",
+              "name": "Forge Version Manifest",
               "type": "VersionManifest",
               "artifact": {
-                "size": 2345,
-                "MD5": "123456abcdef7890abcdef1234567890",
-                "url": "https://example.com/repo/versions/1.16.4-forge-35.1.37.json"
+                "size": 5000,
+                "MD5": "dummyMD5",
+                "url": "https://example.com/1.16.5-forge-36.2.20.json"
               }
             }
           ]
-        },
-        {
-          "id": "examplemod:examplemod:1.0.0",
-          "name": "Beispielmod",
-          "type": "ForgeMod",
-          "artifact": {
-            "size": 12345,
-            "url": "https://example.com/mods/examplemod-1.0.0.jar",
-            "MD5": "fedcba9876543210fedcba9876543210"
-          }
         }
       ]
     }

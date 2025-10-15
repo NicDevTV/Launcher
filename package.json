@@ -1,6 +1,6 @@
 {
   "name": "pizzaland-launcher",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "productName": "PizzaLand-Launcher",
   "description": "Modded Minecraft Launcher",
   "author": "Daniel Scalzi (https://github.com/dscalzi/)",
@@ -46,6 +46,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dscalzi/HeliosLauncher.git"
+    "url": "git+https://github.com:NicDevTV/Launcher.git"
   }
 }

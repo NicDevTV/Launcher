@@ -4,11 +4,11 @@
 title = "Pizzaland-RP Launcher"
 
 [ejs.landing]
-mediaGitHubURL = "https://github.com/dscalzi/HeliosLauncher"
-mediaXURL = "#"
-mediaInstagramURL = "#"
-mediaYouTubeURL = "#"
-mediaDiscordURL = "https://discord.gg/zNWUXdt"
+mediaGitHubURL = "https://www.pizzaland-rp.com/"
+mediaXURL = "https://x.com/pizzalandrp"
+mediaInstagramURL = "https://www.instagram.com/pizzalandrp/"
+mediaYouTubeURL = "https://www.youtube.com/@pizzalandrp"
+mediaDiscordURL = "https://discord.com/invite/pizzalandrp"
 
 [ejs.settings]
 sourceGithubLink = "https://github.com/dscalZi/HeliosLauncher"

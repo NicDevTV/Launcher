@@ -336,22 +336,13 @@ settingsNavDone.onclick = () => {
 }
 
 /**
- * Account Management Tab
+ * Account Management Tab – Microsoft-only
  */
 
 const msftLoginLogger = LoggerUtil.getLogger('Microsoft Login')
 const msftLogoutLogger = LoggerUtil.getLogger('Microsoft Logout')
 
-// Bind the add mojang account button.
-document.getElementById('settingsAddMojangAccount').onclick = (e) => {
-    switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
-        loginViewOnCancel = VIEWS.settings
-        loginViewOnSuccess = VIEWS.settings
-        loginCancelEnabled(true)
-    })
-}
-
-// Bind the add microsoft account button.
+// Bind the add Microsoft account button.
 document.getElementById('settingsAddMicrosoftAccount').onclick = (e) => {
     switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
         ipcRenderer.send(MSFT_OPCODE.OPEN_LOGIN, VIEWS.settings, VIEWS.settings)
@@ -361,99 +352,66 @@ document.getElementById('settingsAddMicrosoftAccount').onclick = (e) => {
 // Bind reply for Microsoft Login.
 ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
     if (arguments_[0] === MSFT_REPLY_TYPE.ERROR) {
-
         const viewOnClose = arguments_[2]
-        console.log(arguments_)
         switchView(getCurrentView(), viewOnClose, 500, 500, () => {
 
             if(arguments_[1] === MSFT_ERROR.NOT_FINISHED) {
-                // User cancelled.
                 msftLoginLogger.info('Login cancelled by user.')
                 return
             }
 
-            // Unexpected error.
             setOverlayContent(
                 Lang.queryJS('settings.msftLogin.errorTitle'),
                 Lang.queryJS('settings.msftLogin.errorMessage'),
                 Lang.queryJS('settings.msftLogin.okButton')
             )
-            setOverlayHandler(() => {
-                toggleOverlay(false)
-            })
+            setOverlayHandler(() => toggleOverlay(false))
             toggleOverlay(true)
         })
     } else if(arguments_[0] === MSFT_REPLY_TYPE.SUCCESS) {
         const queryMap = arguments_[1]
         const viewOnClose = arguments_[2]
 
-        // Error from request to Microsoft.
-        if (Object.prototype.hasOwnProperty.call(queryMap, 'error')) {
+        if (queryMap.error) {
             switchView(getCurrentView(), viewOnClose, 500, 500, () => {
-                // TODO Dont know what these errors are. Just show them I guess.
-                // This is probably if you messed up the app registration with Azure.      
-                let error = queryMap.error // Error might be 'access_denied' ?
-                let errorDesc = queryMap.error_description
-                console.log('Error getting authCode, is Azure application registered correctly?')
-                console.log(error)
-                console.log(errorDesc)
-                console.log('Full query map: ', queryMap)
                 setOverlayContent(
-                    error,
-                    errorDesc,
+                    queryMap.error,
+                    queryMap.error_description,
                     Lang.queryJS('settings.msftLogin.okButton')
                 )
-                setOverlayHandler(() => {
-                    toggleOverlay(false)
-                })
+                setOverlayHandler(() => toggleOverlay(false))
                 toggleOverlay(true)
-
             })
         } else {
-
             msftLoginLogger.info('Acquired authCode, proceeding with authentication.')
-
             const authCode = queryMap.code
             AuthManager.addMicrosoftAccount(authCode).then(value => {
                 updateSelectedAccount(value)
                 switchView(getCurrentView(), viewOnClose, 500, 500, async () => {
                     await prepareSettings()
                 })
-            })
-                .catch((displayableError) => {
-
-                    let actualDisplayableError
-                    if(isDisplayableError(displayableError)) {
-                        msftLoginLogger.error('Error while logging in.', displayableError)
-                        actualDisplayableError = displayableError
-                    } else {
-                        // Uh oh.
-                        msftLoginLogger.error('Unhandled error during login.', displayableError)
-                        actualDisplayableError = Lang.queryJS('login.error.unknown')
-                    }
-
-                    switchView(getCurrentView(), viewOnClose, 500, 500, () => {
-                        setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, Lang.queryJS('login.tryAgain'))
-                        setOverlayHandler(() => {
-                            toggleOverlay(false)
-                        })
-                        toggleOverlay(true)
-                    })
+            }).catch((displayableError) => {
+                let actualDisplayableError = isDisplayableError(displayableError)
+                    ? displayableError
+                    : Lang.queryJS('login.error.unknown')
+                msftLoginLogger.error('Error while logging in.', displayableError)
+                switchView(getCurrentView(), viewOnClose, 500, 500, () => {
+                    setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, Lang.queryJS('login.tryAgain'))
+                    setOverlayHandler(() => toggleOverlay(false))
+                    toggleOverlay(true)
                 })
+            })
         }
     }
 })
 
 /**
- * Bind functionality for the account selection buttons. If another account
- * is selected, the UI of the previously selected account will be updated.
+ * Bind functionality for the account selection buttons.
  */
 function bindAuthAccountSelect(){
     Array.from(document.getElementsByClassName('settingsAuthAccountSelect')).map((val) => {
         val.onclick = (e) => {
-            if(val.hasAttribute('selected')){
-                return
-            }
+            if(val.hasAttribute('selected')) return
             const selectBtns = document.getElementsByClassName('settingsAuthAccountSelect')
             for(let i=0; i<selectBtns.length; i++){
                 if(selectBtns[i].hasAttribute('selected')){
@@ -469,16 +427,17 @@ function bindAuthAccountSelect(){
 }
 
 /**
- * Bind functionality for the log out button. If the logged out account was
- * the selected account, another account will be selected and the UI will
- * be updated accordingly.
+ * Bind functionality for the log out button.
  */
 function bindAuthAccountLogOut(){
     Array.from(document.getElementsByClassName('settingsAuthAccountLogOut')).map((val) => {
         val.onclick = (e) => {
-            let isLastAccount = false
-            if(Object.keys(ConfigManager.getAuthAccounts()).length === 1){
-                isLastAccount = true
+            const parent = val.closest('.settingsAuthAccount')
+            const uuid = parent.getAttribute('uuid')
+            const prevSelAcc = ConfigManager.getSelectedAccount()
+            const isLastAccount = Object.keys(ConfigManager.getAuthAccounts()).length === 1
+
+            if(isLastAccount){
                 setOverlayContent(
                     Lang.queryJS('settings.authAccountLogout.lastAccountWarningTitle'),
                     Lang.queryJS('settings.authAccountLogout.lastAccountWarningMessage'),
@@ -486,40 +445,50 @@ function bindAuthAccountLogOut(){
                     Lang.queryJS('settings.authAccountLogout.cancelButton')
                 )
                 setOverlayHandler(() => {
-                    processLogOut(val, isLastAccount)
+                    processMicrosoftLogOut(uuid, isLastAccount, parent, prevSelAcc)
                     toggleOverlay(false)
                 })
-                setDismissHandler(() => {
-                    toggleOverlay(false)
-                })
+                setDismissHandler(() => toggleOverlay(false))
                 toggleOverlay(true, true)
             } else {
-                processLogOut(val, isLastAccount)
+                processMicrosoftLogOut(uuid, isLastAccount, parent, prevSelAcc)
             }
-            
         }
     })
 }
 
 let msAccDomElementCache
-/**
- * Process a log out.
- * 
- * @param {Element} val The log out button element.
- * @param {boolean} isLastAccount If this logout is on the last added account.
- */
-function processLogOut(val, isLastAccount){
-    const parent = val.closest('.settingsAuthAccount')
-    const uuid = parent.getAttribute('uuid')
-    const prevSelAcc = ConfigManager.getSelectedAccount()
-    const targetAcc = ConfigManager.getAuthAccount(uuid)
-    if(targetAcc.type === 'microsoft') {
-        msAccDomElementCache = parent
-        switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
-            ipcRenderer.send(MSFT_OPCODE.OPEN_LOGOUT, uuid, isLastAccount)
+function processMicrosoftLogOut(uuid, isLastAccount, parent, prevSelAcc){
+    msAccDomElementCache = parent
+    switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
+        ipcRenderer.send(MSFT_OPCODE.OPEN_LOGOUT, uuid, isLastAccount)
+    })
+}
+
+// Bind reply for Microsoft Logout.
+ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
+    if (arguments_[0] === MSFT_REPLY_TYPE.ERROR) {
+        switchView(getCurrentView(), VIEWS.settings, 500, 500, () => {
+            if(arguments_[1] === MSFT_ERROR.NOT_FINISHED) {
+                msftLogoutLogger.info('Logout cancelled by user.')
+                return
+            }
+            setOverlayContent(
+                Lang.queryJS('settings.msftLogout.errorTitle'),
+                Lang.queryJS('settings.msftLogout.errorMessage'),
+                Lang.queryJS('settings.msftLogout.okButton')
+            )
+            setOverlayHandler(() => toggleOverlay(false))
+            toggleOverlay(true)
         })
-    } else {
-        AuthManager.removeMojangAccount(uuid).then(() => {
+    } else if(arguments_[0] === MSFT_REPLY_TYPE.SUCCESS) {
+        const uuid = arguments_[1]
+        const isLastAccount = arguments_[2]
+        const prevSelAcc = ConfigManager.getSelectedAccount()
+
+        msftLogoutLogger.info('Logout Successful. uuid:', uuid)
+
+        AuthManager.removeMicrosoftAccount(uuid).then(() => {
             if(!isLastAccount && uuid === prevSelAcc.uuid){
                 const selAcc = ConfigManager.getSelectedAccount()
                 refreshAuthAccountSelected(selAcc.uuid)
@@ -532,76 +501,18 @@ function processLogOut(val, isLastAccount){
                 loginOptionsViewOnLoginCancel = VIEWS.loginOptions
                 switchView(getCurrentView(), VIEWS.loginOptions)
             }
-        })
-        $(parent).fadeOut(250, () => {
-            parent.remove()
-        })
-    }
-}
-
-// Bind reply for Microsoft Logout.
-ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
-    if (arguments_[0] === MSFT_REPLY_TYPE.ERROR) {
-        switchView(getCurrentView(), VIEWS.settings, 500, 500, () => {
-
-            if(arguments_.length > 1 && arguments_[1] === MSFT_ERROR.NOT_FINISHED) {
-                // User cancelled.
-                msftLogoutLogger.info('Logout cancelled by user.')
-                return
+            if(msAccDomElementCache){
+                msAccDomElementCache.remove()
+                msAccDomElementCache = null
             }
-
-            // Unexpected error.
-            setOverlayContent(
-                Lang.queryJS('settings.msftLogout.errorTitle'),
-                Lang.queryJS('settings.msftLogout.errorMessage'),
-                Lang.queryJS('settings.msftLogout.okButton')
-            )
-            setOverlayHandler(() => {
-                toggleOverlay(false)
-            })
-            toggleOverlay(true)
+        }).finally(() => {
+            if(!isLastAccount) switchView(getCurrentView(), VIEWS.settings, 500, 500)
         })
-    } else if(arguments_[0] === MSFT_REPLY_TYPE.SUCCESS) {
-        
-        const uuid = arguments_[1]
-        const isLastAccount = arguments_[2]
-        const prevSelAcc = ConfigManager.getSelectedAccount()
-
-        msftLogoutLogger.info('Logout Successful. uuid:', uuid)
-        
-        AuthManager.removeMicrosoftAccount(uuid)
-            .then(() => {
-                if(!isLastAccount && uuid === prevSelAcc.uuid){
-                    const selAcc = ConfigManager.getSelectedAccount()
-                    refreshAuthAccountSelected(selAcc.uuid)
-                    updateSelectedAccount(selAcc)
-                    validateSelectedAccount()
-                }
-                if(isLastAccount) {
-                    loginOptionsCancelEnabled(false)
-                    loginOptionsViewOnLoginSuccess = VIEWS.settings
-                    loginOptionsViewOnLoginCancel = VIEWS.loginOptions
-                    switchView(getCurrentView(), VIEWS.loginOptions)
-                }
-                if(msAccDomElementCache) {
-                    msAccDomElementCache.remove()
-                    msAccDomElementCache = null
-                }
-            })
-            .finally(() => {
-                if(!isLastAccount) {
-                    switchView(getCurrentView(), VIEWS.settings, 500, 500)
-                }
-            })
-
     }
 })
 
 /**
- * Refreshes the status of the selected account on the auth account
- * elements.
- * 
- * @param {string} uuid The UUID of the new selected account.
+ * Refreshes the status of the selected account on the auth account elements.
  */
 function refreshAuthAccountSelected(uuid){
     Array.from(document.getElementsByClassName('settingsAuthAccount')).map((val) => {
@@ -610,33 +521,28 @@ function refreshAuthAccountSelected(uuid){
             selBtn.setAttribute('selected', '')
             selBtn.innerHTML = Lang.queryJS('settings.authAccountSelect.selectedButton')
         } else {
-            if(selBtn.hasAttribute('selected')){
-                selBtn.removeAttribute('selected')
-            }
+            selBtn.removeAttribute('selected')
             selBtn.innerHTML = Lang.queryJS('settings.authAccountSelect.selectButton')
         }
     })
 }
 
 const settingsCurrentMicrosoftAccounts = document.getElementById('settingsCurrentMicrosoftAccounts')
-const settingsCurrentMojangAccounts = document.getElementById('settingsCurrentMojangAccounts')
 
 /**
- * Add auth account elements for each one stored in the authentication database.
+ * Add Microsoft auth account elements for each one stored in the authentication database.
  */
 function populateAuthAccounts(){
     const authAccounts = ConfigManager.getAuthAccounts()
     const authKeys = Object.keys(authAccounts)
-    if(authKeys.length === 0){
-        return
-    }
-    const selectedUUID = ConfigManager.getSelectedAccount().uuid
+    if(authKeys.length === 0) return
 
+    const selectedUUID = ConfigManager.getSelectedAccount().uuid
     let microsoftAuthAccountStr = ''
-    let mojangAuthAccountStr = ''
 
     authKeys.forEach((val) => {
         const acc = authAccounts[val]
+        if(acc.type !== 'microsoft') return
 
         const accHtml = `<div class="settingsAuthAccount" uuid="${acc.uuid}">
             <div class="settingsAuthAccountLeft">
@@ -662,16 +568,10 @@ function populateAuthAccounts(){
             </div>
         </div>`
 
-        if(acc.type === 'microsoft') {
-            microsoftAuthAccountStr += accHtml
-        } else {
-            mojangAuthAccountStr += accHtml
-        }
-
+        microsoftAuthAccountStr += accHtml
     })
 
     settingsCurrentMicrosoftAccounts.innerHTML = microsoftAuthAccountStr
-    settingsCurrentMojangAccounts.innerHTML = mojangAuthAccountStr
 }
 
 /**

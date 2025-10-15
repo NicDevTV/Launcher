@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "rss": "https://example.com/rss.xml",
+  "discord": {
+    "clientId": "123456789012345678",
+    "smallImageText": "My Launcher",
+    "smallImageKey": "launcher-icon"
+  },
+  "servers": [
+    {
+      "id": "Forge-1.16.4",
+      "name": "Mein Forge Server (1.16.4)",
+      "description": "Beispiel Minecraft 1.16.4 Server mit Forge",
+      "icon": "https://example.com/icons/forge-1.16.4.png",
+      "version": "1.0.0",
+      "address": "localhost:25565",
+      "minecraftVersion": "1.16.4",
+      "discord": {
+        "shortId": "Forge-1.16.4",
+        "largeImageKey": "https://example.com/icons/large.png",
+        "largeImageText": "Forge Minecraft 1.16.4"
+      },
+      "mainServer": true,
+      "autoconnect": false,
+      "modules": [
+        {
+          "id": "net.minecraftforge:forge:1.16.4-35.1.37",
+          "name": "Minecraft Forge 1.16.4",
+          "type": "ForgeHosted",
+          "classpath": true,
+          "artifact": {
+            "size": 1234567,
+            "MD5": "abcdef1234567890abcdef1234567890",
+            "url": "https://example.com/repo/forge-1.16.4-35.1.37.jar"
+          },
+          "subModules": [
+            {
+              "id": "1.16.4-35.1.37",
+              "name": "Version Manifest",
+              "type": "VersionManifest",
+              "artifact": {
+                "size": 2345,
+                "MD5": "123456abcdef7890abcdef1234567890",
+                "url": "https://example.com/repo/versions/1.16.4-forge-35.1.37.json"
+              }
+            }
+          ]
+        },
+        {
+          "id": "examplemod:examplemod:1.0.0",
+          "name": "Beispielmod",
+          "type": "ForgeMod",
+          "artifact": {
+            "size": 12345,
+            "url": "https://example.com/mods/examplemod-1.0.0.jar",
+            "MD5": "fedcba9876543210fedcba9876543210"
+          }
+        }
+      ]
+    }
+  ]
+}

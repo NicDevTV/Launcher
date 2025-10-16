@@ -254,6 +254,19 @@
                 <span class="settingsTabHeaderText"><%- lang('settings.launcherTabHeaderText') %></span>
                 <span class="settingsTabHeaderDesc"><%- lang('settings.launcherTabHeaderDesc') %></span>
             </div>
+                <div class="settingsFieldContainer">
+                    <div class="settingsFieldLeft">
+                    <span class="settingsFieldTitle">Sprache</span>
+                    <span class="settingsFieldDesc">Wähle die Sprache der Anwendung (funktioniert aktuell noch nicht)</span>
+                </div>
+                <div class="settingsFieldRight">
+                    <select id="settingsLanguageSelect">
+                        <option value="de">Deutsch</option>
+                        <option value="en">Englisch</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="settingsFieldContainer">
                 <div class="settingsFieldLeft">
                     <span class="settingsFieldTitle"><%- lang('settings.allowPrereleaseTitle') %></span>
@@ -314,6 +327,9 @@
                     <!-- <a href="https://github.com/dscalzi/HeliosLauncher" id="settingsAboutSourceButton" class="settingsAboutButton">Original Source</a> -->
                     <a href="<%- lang('settings.supportLink') %>" id="settingsAboutSupportButton" class="settingsAboutButton"><%- lang('settings.support') %></a>
                     <a href="#" id="settingsAboutDevToolsButton" class="settingsAboutButton"><%- lang('settings.devToolsConsole') %></a>
+                    <div id="settingsAboutProduct" class="settingsAboutButton" style="pointer-events: none;">
+                        Product of NicDevTV
+                    </div>
                 </div>
             </div>
             <div class="settingsChangelogContainer">

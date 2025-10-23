@@ -1,0 +1,17 @@
+# Default Launcher Customs
+
+[ejs.app]
+title = "Pizzaland-RP Launcher"
+
+[ejs.landing]
+mediaGitHubURL = "https://www.pizzaland-rp.com/"
+mediaXURL = "https://x.com/pizzalandrp"
+mediaInstagramURL = "https://www.instagram.com/pizzalandrp/"
+mediaYouTubeURL = "https://www.youtube.com/@pizzalandrp"
+mediaDiscordURL = "https://discord.com/invite/pizzalandrp"
+
+[ejs.welcome]
+welcomeHeader = "HERZLICH WILLKOMMEN!"
+welcomeDescription = "Schön, dass du hier bist! Bereite dich auf ein spannendes Abenteuer vor und erkunde eine Welt voller Geheimnisse, Herausforderungen und Möglichkeiten. Egal, ob du allein oder mit Freunden spielst – hier beginnt dein persönliches Abenteuer."
+welcomeDescCTA = "Mach dich bereit und starte dein Abenteuer jetzt!"
+continueButton = "Weiter"
